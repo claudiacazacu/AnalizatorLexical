@@ -1,0 +1,3 @@
+C:/Users/claud/OneDrive/Desktop/facultate/an3sem1/compilator1/cmake-build-debug/CMakeFiles/compilator1.dir
+C:/Users/claud/OneDrive/Desktop/facultate/an3sem1/compilator1/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/claud/OneDrive/Desktop/facultate/an3sem1/compilator1/cmake-build-debug/CMakeFiles/rebuild_cache.dir
