@@ -163,58 +163,45 @@ Token iaurmatorul(ifstream &in, int &lin){
             return token;
         }
 
-        // --- tratăm stringurile " ... "
         if(z=='"'){
             chestia.clear();
             chestia += '"';
             bool inchis=false;
             int lin_start = lin;
             while(in.get(z)){
-                // dacă găsim ghilimea de închidere -> string normal
                 if(z=='"'){
                     chestia += '"';
                     inchis = true;
                     break;
                 }
-                // dacă apar newline în interior
                 if(z=='\n'){
-                    lin++; // contorizăm linia
-                    // conform cerinței: șirurile *pot* fi multiline, dar dacă vrem
-                    // să semnalăm un string neînchis la sfârșitul liniei (comportament cerut),
-                    // tratăm newline fără încheiere ca eroare lexicală de șir neînchis
-                    // și recuperează pointerul la primul caracter nenul (după whitespace).
+                    lin++; 
                     cout<<"Eroare, nu e inchis stringul la linia "<<lin_start<<endl;
-                    // consumăm până la primul caracter nenul (nu-space/tab/newline)
                     char nxt;
                     while(in.get(nxt)){
                         if(nxt=='\n') { lin++; continue; }
                         if(nxt==' ' || nxt=='\t') continue;
-                        // am găsit primul caracter util: punem înapoi ca să fie citit la următorul apel
                         in.unget();
                         break;
                     }
-                    // pregătim token de eroare: lungime 0, pointer deja poziționat
-                    token.val = "";          // nu returnăm șirul parțial
+                    token.val = "";          
                     token.tip = "eroare";
                     token.lung = 0;
                     token.lin = lin_start;
                     return token;
                 }
-                // în mod normal, acumulăm caractere în string
                 chestia += z;
-            } // end while get
+            } 
 
             if(!inchis){
-                // dacă am ieșit din loop fără inchidere (EOF) -> eroare, dar s-ar opri
                 cout<<"Eroare, nu e inchis stringul la linia "<<lin_start<<endl;
-                // la EOF nu mai avem nimic de scanat: token de eroare cu lung=0
                 token.val = "";
                 token.tip = "eroare";
                 token.lung = 0;
                 token.lin = lin_start;
                 return token;
             } else {
-                // string corect închis
+
                 token.val = chestia;
                 token.tip = "string_literal";
                 token.lung = chestia.length();
@@ -223,10 +210,9 @@ Token iaurmatorul(ifstream &in, int &lin){
             }
         }
 
-        // --- COMENTARII ---
         if(z == '/'){
             if(in.peek() == '/'){
-                in.get(z); // consumam al doilea '/'
+                in.get(z); 
                 chestia = "//";
                 while(in.peek() != EOF && in.peek() != '\n'){
                     in.get(z);
@@ -238,7 +224,7 @@ Token iaurmatorul(ifstream &in, int &lin){
                 token.lin = lin;
                 return token;
             } else if (in.peek() == '*'){
-                in.get(z); // consumam '*'
+                in.get(z); 
                 chestia = "/*";
                 bool closed = false;
                 int lin_start = lin;
@@ -247,14 +233,13 @@ Token iaurmatorul(ifstream &in, int &lin){
                     if(z=='\n') lin++;
                     if(z=='*' && in.peek()=='/'){
                         in.get(z);
-                        chestia += z; // adaugam '/'
+                        chestia += z; 
                         closed = true;
                         break;
                     }
                 }
                 if(!closed){
                     cout<<"Eroare, comentariu neinchis la linia "<<lin_start<<endl;
-                    // conform cerintei: la eroare lexicală scanam in continuare pana la primul non-whitespace
                     char nxt;
                     while(in.get(nxt)){
                         if(nxt=='\n'){ lin++; continue; }
@@ -287,7 +272,6 @@ Token iaurmatorul(ifstream &in, int &lin){
 
         if(esteOperator(z)){
             chestia = string(1,z);
-            // verificam operatori din 2 caractere (ex: ==, !=, <=, >=)
             if(in.peek()!=EOF){
                 char urm = in.peek();
                 if((z=='=' && urm=='=') ||
@@ -305,16 +289,13 @@ Token iaurmatorul(ifstream &in, int &lin){
             return token;
         }
 
-        // eroare literala: caracter necunoscut
         cout<<"Eroare, caracter necunoscut '"<<z<<"' la linia "<<lin<<endl;
-        // conform cerintei: seteaza lungimea tokenului curent la 0 si avanseaza la primul caracter nenul
-        // punem token de eroare cu lung=0 si pozitia curenta (lin)
         token.val = string(1,z);
         token.tip = "eroare";
         token.lung = 0;
         token.lin = lin;
 
-        // consumam pana la primul caracter nenul (nu spatiu/tab/newline) si punem inapoi acel caracter
+
         char nxt;
         while(in.get(nxt)){
             if(nxt=='\n'){ lin++; continue; }
@@ -323,7 +304,7 @@ Token iaurmatorul(ifstream &in, int &lin){
             break;
         }
         return token;
-    } // end while in.get
+    } 
 
     token.tip="end_of_file";
     return token;
@@ -340,14 +321,25 @@ int main(){
 
     int line=1;
     Token token;
+    Token celMaiLung;
+    celMaiLung.lung=0;
+
     do{
         token=iaurmatorul(in,line);
         if(token.tip !="end_of_file")
             {
                 cout<< " '"<<token.val<<"' , "<<token.tip
                     <<" ; "<<token.lung<<" ; linia " <<token.lin<<endl;
+
+                if (token.lung > celMaiLung.lung && token.tip != "eroare" && token.tip != "comment") {
+                celMaiLung = token; }
             }
-    } while(token.tip !="end_of_file");
+        } while(token.tip !="end_of_file");
+
+    cout << "\nCel mai lung token valid este: '" << celMaiLung.val
+     << "' (" << celMaiLung.tip << "), lungime = " << celMaiLung.lung
+     << ", linia " << celMaiLung.lin << endl;
+
     in.close();
     return 0;
 }
