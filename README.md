@@ -51,9 +51,3 @@ Analizatorul funcționează pe baza unei funcții de scanare (`iaurmatorul`) car
 Procesul se repetă până la atingerea sfârșitului fișierului.
 
 ---
-
-## Rulare
-1. Asigură-te că fișierul `test3.rs` se află în același director cu fișierul sursă.
-2. Compilează programul:
-```bash
-g++ main.cpp -o lexer
